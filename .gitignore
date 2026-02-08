@@ -37,3 +37,5 @@ ENV/
 tsh_memory.sql
 Skill.md
 *.db
+
+.env

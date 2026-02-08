@@ -1,8 +1,12 @@
+import os
 import typer
 import asyncio
 from typing import Optional
+from dotenv import load_dotenv
 from tsh.core.agent import Agent
-from tsh.tools.file_tools import FileReadTool, FileWriteTool, ListDirTool
+from tsh.tools.file_tools import (
+    FileReadTool, FileWriteTool, ListDirTool, FileSearchTool, FileMoveTool, FileDeleteTool
+)
 from tsh.tools.web_tools import WebSearchTool, WebFetchTool
 from tsh.tools.excel_tools import ExcelReadTool
 from tsh.tools.media_tools import ImageAnalyzeTool, VideoAnalyzeTool
@@ -13,17 +17,54 @@ from tsh.cli.ui import (
     get_prompt_text
 )
 
+# Load environment variables from .env file
+load_dotenv()
+
 app = typer.Typer(help="TSH: The Agentic Personal Assistant CLI")
 
 @app.command()
 def main(
     query: Optional[str] = typer.Argument(None, help="The question or task for TSH"),
-    provider: str = typer.Option("anthropic", "--provider", "-p", help="AI provider (anthropic, openai, gemini, ollama, local, glm)"),
-    model: str = typer.Option("claude-3-5-sonnet-20241022", "--model", "-m", help="Model name"),
+    provider: Optional[str] = typer.Option(None, "--provider", "-p", help="AI provider (anthropic, openai, gemini, ollama, local, glm). Auto-detects from .env if omitted."),
+    model: Optional[str] = typer.Option(None, "--model", "-m", help="Model name. Auto-selects based on provider if omitted."),
     theme: str = typer.Option("default", "--theme", "-t", help=f"UI Theme ({', '.join(THEMES.keys())})"),
     no_interactive: bool = typer.Option(False, "--no-interactive", help="Disable interactive mode"),
     export_skill: bool = typer.Option(True, "--export-skill/--no-export-skill", help="Export session to Skill.md on exit")
 ):
+    # Auto-configure provider if not provided
+    if provider is None:
+        if os.getenv("TSH_PROVIDER"):
+            provider = os.getenv("TSH_PROVIDER")
+        elif os.getenv("ANTHROPIC_API_KEY"):
+            provider = "anthropic"
+        elif os.getenv("OPENAI_API_KEY"):
+            provider = "openai"
+        elif os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"):
+            provider = "gemini"
+        elif os.getenv("OLLAMA_BASE_URL"):
+            provider = "ollama"
+        elif os.getenv("DEEPSEEK_API_KEY") or os.getenv("LITELLM_API_KEY"):
+             provider = "litellm"
+        else:
+            provider = "anthropic" # Default fallback
+
+    # Auto-configure model if not provided
+    if model is None:
+        if os.getenv("TSH_MODEL"):
+            model = os.getenv("TSH_MODEL")
+        elif provider == "anthropic":
+            model = "claude-3-5-sonnet-20241022"
+        elif provider == "openai":
+            model = "gpt-4o"
+        elif provider == "gemini":
+            model = "gemini-1.5-pro"
+        elif provider == "ollama":
+            model = "llama3"
+        elif provider == "litellm":
+            model = "gpt-3.5-turbo" # Default fallback for litellm
+        else:
+            model = "claude-3-5-sonnet-20241022"
+
     try:
         set_theme(theme)
     except Exception as e:
