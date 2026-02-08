@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tsh-agent"
+version = "0.1.0"
+description = "TSH: An AGI-like Agentic CLI for files, media, web, and more."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "rich>=13.0.0",
+    "typer>=0.9.0",
+    "openai>=1.0.0",
+    "anthropic>=0.10.0",
+    "google-generativeai>=0.3.0",
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
+    "pillow>=10.0.0",
+    "httpx>=0.24.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "duckduckgo-search>=4.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+    "litellm>=1.0.0",
+    "gitpython>=3.1.0",
+]
+
+[project.scripts]
+tsh = "tsh.cli.main:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tsh*"]
