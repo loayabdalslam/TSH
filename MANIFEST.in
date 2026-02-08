@@ -1,0 +1,12 @@
+include README.md
+include LICENSE
+include .env.example
+include pyproject.toml
+include requirements.txt
+recursive-include tsh *.py
+recursive-include tsh *.sql
+recursive-include tsh *.md
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude *.so
+global-exclude .DS_Store
